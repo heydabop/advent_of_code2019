@@ -40,7 +40,7 @@ fn main() {
 }
 
 fn get_digits(d: u64, v: &mut Vec<u64>) -> () {
-    if d > 10 {
+    if d >= 10 {
         get_digits(d / 10, v);
     }
     v.push(d % 10);
