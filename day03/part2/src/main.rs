@@ -5,6 +5,8 @@ enum Direction {
     Down(usize),
 }
 
+#[allow(clippy::cast_possible_truncation)]
+#[allow(clippy::cast_sign_loss)]
 fn main() {
     let input = match std::fs::read_to_string("../input") {
         Ok(i) => i.trim().to_string(),
@@ -17,10 +19,10 @@ fn main() {
     let mut min_y: i64 = 0;
 
     // Chart the x and y of both wires, tracking the min and max of each
-    for ref line in input.lines() {
+    for line in input.lines() {
         let mut x: i64 = 0;
         let mut y: i64 = 0;
-        for ref seg in line.split(',') {
+        for seg in line.split(',') {
             match parse_direction(seg) {
                 Direction::Left(dist) => {
                     x -= dist as i64;
@@ -51,14 +53,13 @@ fn main() {
     let center_x = (0 - min_x) as usize;
     let center_y = (0 - min_y) as usize;
 
-    let mut wire = 0;
-    for ref line in input.lines() {
+    for (wire, line) in input.lines().enumerate() {
         // Record each wire in vector, starting at center port
         let mut x = center_x;
         let mut y = center_y;
         let mut steps = 0;
 
-        for ref seg in line.split(',') {
+        for seg in line.split(',') {
             match parse_direction(seg) {
                 // Each grid sapce has two values, each value is the number of steps a wire took to get to this space, 0 means a wire isn't on that space
                 Direction::Left(dist) => {
@@ -105,7 +106,6 @@ fn main() {
         if grid[y][x][wire] == 0 {
             grid[y][x][wire] = steps;
         }
-        wire += 1;
     }
 
     let mut min_steps = usize::max_value();

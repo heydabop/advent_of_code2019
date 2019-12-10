@@ -5,6 +5,8 @@ enum Direction {
     Down(usize),
 }
 
+#[allow(clippy::cast_possible_truncation)]
+#[allow(clippy::cast_sign_loss)]
 fn main() {
     let input = match std::fs::read_to_string("../input") {
         Ok(i) => i.trim().to_string(),
@@ -17,10 +19,10 @@ fn main() {
     let mut min_y: i64 = 0;
 
     // Chart the x and y of both wires, tracking the min and max of each
-    for ref line in input.lines() {
+    for line in input.lines() {
         let mut x: i64 = 0;
         let mut y: i64 = 0;
-        for ref seg in line.split(',') {
+        for seg in line.split(',') {
             match parse_direction(seg) {
                 Direction::Left(dist) => {
                     x -= dist as i64;
@@ -52,11 +54,11 @@ fn main() {
     let center_y = (0 - min_y) as usize;
 
     let mut wire = 1;
-    for ref line in input.lines() {
+    for line in input.lines() {
         // Record each wire in vector, starting at center port
         let mut x = center_x;
         let mut y = center_y;
-        for ref seg in line.split(',') {
+        for seg in line.split(',') {
             match parse_direction(seg) {
                 // A grid space will be either 0, 1, 2, or 3
                 // 0 - no wires

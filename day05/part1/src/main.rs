@@ -1,3 +1,6 @@
+#![allow(clippy::cast_possible_truncation)]
+#![allow(clippy::cast_sign_loss)]
+
 use std::io::{self, prelude::*};
 
 fn main() {
@@ -33,7 +36,7 @@ fn main() {
     let mut i = 0;
     let mut digits = vec![0; 5]; //reusable buffer for opcodes and modes
     loop {
-        for d in digits.iter_mut() {
+        for d in &mut digits {
             //clear buffer
             *d = 0;
         }
@@ -101,7 +104,7 @@ fn output(data: &[i64], offset: usize, modes: &[i64]) {
     println!("{}", params[0]);
 }
 
-fn get_digits(d: i64, i: usize, v: &mut Vec<i64>) -> () {
+fn get_digits(d: i64, i: usize, v: &mut Vec<i64>) {
     if d >= 10 {
         get_digits(d / 10, i + 1, v);
     }

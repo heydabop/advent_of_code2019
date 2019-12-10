@@ -1,6 +1,6 @@
 fn main() {
-    let min = 172851;
-    let max = 675869;
+    let min = 172_851;
+    let max = 675_869;
 
     let mut total = 0;
 
@@ -39,7 +39,7 @@ fn main() {
     println!("{}", total);
 }
 
-fn get_digits(d: u64, v: &mut Vec<u64>) -> () {
+fn get_digits(d: u64, v: &mut Vec<u64>) {
     if d >= 10 {
         get_digits(d / 10, v);
     }

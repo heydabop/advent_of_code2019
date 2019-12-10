@@ -32,7 +32,7 @@ fn main() {
                 }
             }
 
-            if ints[0] == 19690720 {
+            if ints[0] == 19_690_720 {
                 println!("{} {}", i, j);
                 return;
             }
