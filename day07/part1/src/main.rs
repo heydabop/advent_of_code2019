@@ -1,23 +1,7 @@
 #![allow(clippy::cast_possible_truncation)]
 #![allow(clippy::cast_sign_loss)]
 
-use std::io::{self, prelude::*};
-
 fn main() {
-    // Read input integer
-    let mut input = String::new();
-    print!("Input ID: ");
-    if let Err(e) = io::stdout().flush() {
-        panic!(e);
-    }
-    if let Err(e) = io::stdin().read_line(&mut input) {
-        panic!(e);
-    }
-    let input = match input.trim().parse::<i64>() {
-        Ok(i) => i,
-        Err(e) => panic!("Error parsing input: {}", e),
-    };
-
     // Read file and split by commas into vector of integers
     let file = match std::fs::read_to_string("input") {
         Ok(i) => i.trim().to_string(),
@@ -33,8 +17,36 @@ fn main() {
         });
     }
 
-    let mut c = part1::Computer::new(data);
-    let output = c.run(Some(input));
-    println!("{:?}", output);
-    println!("{:?}", c.data());
+    let mut max = i64::min_value();
+
+    for perm in all_permutations(&mut [0, 1, 2, 3, 4], 5) {
+        let mut output = vec![0];
+
+        for phase in perm {
+            let mut amp = part1::Computer::new(data.clone());
+            output = amp.run(&[phase, output[0]]);
+            max = max.max(output[0]);
+        }
+    }
+
+    println!("{}", max);
+}
+
+fn all_permutations(v: &mut [i64], k: usize) -> Vec<Vec<i64>> {
+    if k == 1 {
+        return vec![Vec::from(v)];
+    }
+    let mut vv = all_permutations(v, k - 1);
+
+    for i in 0..k - 1 {
+        if k % 2 == 0 {
+            v.swap(i, k - 1);
+        } else {
+            v.swap(0, k - 1);
+        }
+        let mut v2 = all_permutations(v, k - 1);
+        vv.append(&mut v2);
+    }
+
+    vv
 }

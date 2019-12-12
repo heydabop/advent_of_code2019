@@ -1,3 +1,6 @@
+#![allow(clippy::cast_possible_truncation)]
+#![allow(clippy::cast_sign_loss)]
+
 pub struct Computer {
     data: Vec<i64>,
 }
@@ -7,8 +10,9 @@ impl Computer {
         Self { data }
     }
 
-    pub fn run(&mut self, input: Option<i64>) -> Vec<i64> {
+    pub fn run(&mut self, input: &[i64]) -> Vec<i64> {
         let mut output = Vec::new();
+        let mut input_offset = 0;
 
         let mut i = 0;
         let mut digits = vec![0; 5]; //reusable buffer for opcodes and modes
@@ -35,7 +39,8 @@ impl Computer {
                 [3, 0] => {
                     // input
                     let offset = self.data[i + 1] as usize;
-                    self.data[offset] = input.unwrap();
+                    self.data[offset] = input[input_offset];
+                    input_offset += 1;
                     i + 2
                 }
                 [4, 0] => {
@@ -109,10 +114,10 @@ impl Computer {
     fn jit(&self, offset: usize, modes: &[i64]) -> usize {
         let params = self.get_params(offset + 1, &modes[..2]);
 
-        if params[0] != 0 {
-            params[1] as usize
-        } else {
+        if params[0] == 0 {
             offset + 3
+        } else {
+            params[1] as usize
         }
     }
 
@@ -156,10 +161,10 @@ mod tests {
         let data = vec![3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8];
 
         let mut eq = Computer::new(data.clone());
-        assert_eq!(vec![1], eq.run(Some(8)));
+        assert_eq!(vec![1], eq.run(&[8]));
 
         let mut neq = Computer::new(data);
-        assert_eq!(vec![0], neq.run(Some(9)));
+        assert_eq!(vec![0], neq.run(&[9]));
     }
 
     #[test]
@@ -167,10 +172,10 @@ mod tests {
         let data = vec![3, 9, 7, 9, 10, 9, 4, 9, 99, -1, 8];
 
         let mut lt = Computer::new(data.clone());
-        assert_eq!(vec![1], lt.run(Some(7)));
+        assert_eq!(vec![1], lt.run(&[7]));
 
         let mut nlt = Computer::new(data);
-        assert_eq!(vec![0], nlt.run(Some(8)));
+        assert_eq!(vec![0], nlt.run(&[8]));
     }
 
     #[test]
@@ -178,10 +183,10 @@ mod tests {
         let data = vec![3, 3, 1108, -1, 8, 3, 4, 3, 99];
 
         let mut eq = Computer::new(data.clone());
-        assert_eq!(vec![1], eq.run(Some(8)));
+        assert_eq!(vec![1], eq.run(&[8]));
 
         let mut neq = Computer::new(data);
-        assert_eq!(vec![0], neq.run(Some(9)));
+        assert_eq!(vec![0], neq.run(&[9]));
     }
 
     #[test]
@@ -189,9 +194,62 @@ mod tests {
         let data = vec![3, 3, 1107, -1, 8, 3, 4, 3, 99];
 
         let mut lt = Computer::new(data.clone());
-        assert_eq!(vec![1], lt.run(Some(7)));
+        assert_eq!(vec![1], lt.run(&[7]));
 
         let mut nlt = Computer::new(data);
-        assert_eq!(vec![0], nlt.run(Some(8)));
+        assert_eq!(vec![0], nlt.run(&[8]));
+    }
+
+    #[test]
+    fn amp1() {
+        let data = vec![
+            3, 15, 3, 16, 1002, 16, 10, 16, 1, 16, 15, 15, 4, 15, 99, 0, 0,
+        ];
+
+        let mut output = vec![0];
+        let phases = &[4, 3, 2, 1, 0];
+
+        for phase in phases {
+            let mut amp = Computer::new(data.clone());
+            output = amp.run(&[*phase, output[0]]);
+        }
+
+        assert_eq!(vec![43210], output);
+    }
+
+    #[test]
+    fn amp2() {
+        let data = vec![
+            3, 23, 3, 24, 1002, 24, 10, 24, 1002, 23, -1, 23, 101, 5, 23, 23, 1, 24, 23, 23, 4, 23,
+            99, 0, 0,
+        ];
+
+        let mut output = vec![0];
+        let phases = &[0, 1, 2, 3, 4];
+
+        for phase in phases {
+            let mut amp = Computer::new(data.clone());
+            output = amp.run(&[*phase, output[0]]);
+        }
+
+        assert_eq!(vec![54321], output);
+    }
+
+    #[test]
+    fn amp3() {
+        let data = vec![
+            3, 31, 3, 32, 1002, 32, 10, 32, 1001, 31, -2, 31, 1007, 31, 0, 33, 1002, 33, 7, 33, 1,
+            33, 31, 31, 1, 32, 31, 31, 4, 31, 99, 0, 0, 0,
+        ];
+
+        let mut output = vec![0];
+        let phases = &[1, 0, 4, 3, 2];
+
+        for phase in phases {
+            let mut amp = Computer::new(data.clone());
+            output = amp.run(&[*phase, output[0]]);
+        }
+
+        assert_eq!(vec![65210], output);
     }
 }
