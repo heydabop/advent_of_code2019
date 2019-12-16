@@ -19,14 +19,26 @@ fn main() {
 
     let mut max = i64::min_value();
 
-    for perm in all_permutations(&mut [0, 1, 2, 3, 4], 5) {
+    for perm in all_permutations(&mut [5, 6, 7, 8, 9], 5) {
+        let mut amps = Vec::new();
+        for phase in perm {
+            amps.push(part2::Computer::new_with_input(data.clone(), &[phase]));
+        }
         let mut output = vec![0];
 
-        for phase in perm {
-            let mut amp = part2::Computer::new(data.clone());
-            output = amp.run(vec![phase, output[0]]);
-            max = max.max(output[0]);
+        let mut i = 0;
+        loop {
+            if amps[i].halted() {
+                break;
+            }
+            let mut input = Vec::new();
+            input.append(&mut output);
+            output = amps[i].run(&input);
+            i += 1;
+            i %= 5;
         }
+
+        max = max.max(output[0]);
     }
 
     println!("{}", max);

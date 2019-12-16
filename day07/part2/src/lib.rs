@@ -5,6 +5,7 @@ pub struct Computer {
     data: Vec<i64>,
     offset: usize,
     halted: bool,
+    input: Vec<i64>,
 }
 
 impl Computer {
@@ -13,10 +14,23 @@ impl Computer {
             data,
             offset: 0,
             halted: false,
+            input: Vec::new(),
         }
     }
 
-    pub fn run(&mut self, mut input: Vec<i64>) -> Vec<i64> {
+    pub fn new_with_input(data: Vec<i64>, init_input: &[i64]) -> Self {
+        let mut input = Vec::new();
+        input.extend_from_slice(init_input);
+        Self {
+            data,
+            offset: 0,
+            halted: false,
+            input,
+        }
+    }
+
+    pub fn run(&mut self, new_input: &[i64]) -> Vec<i64> {
+        self.input.extend_from_slice(new_input);
         let mut output = Vec::new();
 
         let mut digits = vec![0; 5]; //reusable buffer for opcodes and modes
@@ -42,11 +56,11 @@ impl Computer {
                 }
                 [3, 0] => {
                     // input
-                    if input.is_empty() {
+                    if self.input.is_empty() {
                         break;
                     }
                     let offset = self.data[self.offset + 1] as usize;
-                    self.data[offset] = input.remove(0);
+                    self.data[offset] = self.input.remove(0);
                     self.offset + 2
                 }
                 [4, 0] => {
@@ -177,10 +191,10 @@ mod tests {
         let data = vec![3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8];
 
         let mut eq = Computer::new(data.clone());
-        assert_eq!(vec![1], eq.run(vec![8]));
+        assert_eq!(vec![1], eq.run(&[8]));
 
         let mut neq = Computer::new(data);
-        assert_eq!(vec![0], neq.run(vec![9]));
+        assert_eq!(vec![0], neq.run(&[9]));
     }
 
     #[test]
@@ -188,10 +202,10 @@ mod tests {
         let data = vec![3, 9, 7, 9, 10, 9, 4, 9, 99, -1, 8];
 
         let mut lt = Computer::new(data.clone());
-        assert_eq!(vec![1], lt.run(vec![7]));
+        assert_eq!(vec![1], lt.run(&[7]));
 
         let mut nlt = Computer::new(data);
-        assert_eq!(vec![0], nlt.run(vec![8]));
+        assert_eq!(vec![0], nlt.run(&[8]));
     }
 
     #[test]
@@ -199,10 +213,10 @@ mod tests {
         let data = vec![3, 3, 1108, -1, 8, 3, 4, 3, 99];
 
         let mut eq = Computer::new(data.clone());
-        assert_eq!(vec![1], eq.run(vec![8]));
+        assert_eq!(vec![1], eq.run(&[8]));
 
         let mut neq = Computer::new(data);
-        assert_eq!(vec![0], neq.run(vec![9]));
+        assert_eq!(vec![0], neq.run(&[9]));
     }
 
     #[test]
@@ -210,10 +224,10 @@ mod tests {
         let data = vec![3, 3, 1107, -1, 8, 3, 4, 3, 99];
 
         let mut lt = Computer::new(data.clone());
-        assert_eq!(vec![1], lt.run(vec![7]));
+        assert_eq!(vec![1], lt.run(&[7]));
 
         let mut nlt = Computer::new(data);
-        assert_eq!(vec![0], nlt.run(vec![8]));
+        assert_eq!(vec![0], nlt.run(&[8]));
     }
 
     #[test]
@@ -227,7 +241,7 @@ mod tests {
 
         for phase in phases {
             let mut amp = Computer::new(data.clone());
-            output = amp.run(vec![*phase, output[0]]);
+            output = amp.run(&[*phase, output[0]]);
         }
 
         assert_eq!(vec![43210], output);
@@ -245,7 +259,7 @@ mod tests {
 
         for phase in phases {
             let mut amp = Computer::new(data.clone());
-            output = amp.run(vec![*phase, output[0]]);
+            output = amp.run(&[*phase, output[0]]);
         }
 
         assert_eq!(vec![54321], output);
@@ -263,7 +277,7 @@ mod tests {
 
         for phase in phases {
             let mut amp = Computer::new(data.clone());
-            output = amp.run(vec![*phase, output[0]]);
+            output = amp.run(&[*phase, output[0]]);
         }
 
         assert_eq!(vec![65210], output);
